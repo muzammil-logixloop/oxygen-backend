@@ -37,20 +37,26 @@ exports.getMyIssues = async (req, res) => {
         } else if (role === 'Operator' || role === 'Site Manager') {
             whereClause.reportedById = userId;
         }
-        // Admin can see all issues
-        else if (role === 'Admin') {
+        // Oxygen Admin can see all issues
+        else if (role === 'Oxygen Admin') {
             // No where clause needed, admins see everything
         }
 
         const issues = await Issue.findAll({
             where: whereClause,
-            include: [{ model: Chamber }, { model: User, as: 'assignedTo' }]
+            include: [
+                { model: Chamber },        // Chamber info
+                { model: User, as: 'reporter' },  // Who reported it
+                { model: User, as: 'assignee' }   // Who is assigned
+            ]
         });
+
         res.json(issues);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching issues', error: error.message });
     }
 };
+
 
 // Admin assigns an issue to an engineer
 exports.assignIssue = async (req, res) => {
@@ -58,7 +64,7 @@ exports.assignIssue = async (req, res) => {
         const { issueId, engineerId } = req.body;
         const { role } = req.user;
 
-        if (role !== 'Admin') {
+        if (role !== 'Oxygen Admin') {
             return res.status(403).json({ message: 'Only admins can assign issues' });
         }
 

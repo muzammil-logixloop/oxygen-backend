@@ -18,6 +18,7 @@ router.get('/chambers', adminController.getAllChambers);
 
 // User Routes
 router.get('/users', adminController.getUsers);
+router.get('/users/engineers', adminController.getEngineers);
 router.post('/users', adminController.createUser);
 router.delete('/users/:id', adminController.deleteUser);
 router.post('/assign-user', adminController.assignUserToCustomer);

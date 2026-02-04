@@ -21,6 +21,20 @@ exports.getAllCustomers = async (req, res) => {
     }
 };
 
+exports.getEngineers = async (req, res) => {
+    try {
+        const engineerRole = await Role.findOne({ where: { name: 'Engineer' } });
+        if (!engineerRole) return res.status(404).json({ message: 'Engineer role not found' });
+        const engineers = await User.findAll({
+            where: { roleId: engineerRole.id },
+            attributes: { exclude: ['password'] }
+        });
+        res.json(engineers);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching engineers', error: error.message });
+    }   
+};
+
 // --- Chamber Management ---
 
 exports.createChamber = async (req, res) => {
