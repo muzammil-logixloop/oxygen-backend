@@ -1,12 +1,10 @@
-const { Issue, Chamber } = require('../models');
+const { Issue, Chamber, User } = require('../models');
 
+// Report a new issue
 exports.reportIssue = async (req, res) => {
     try {
         const { chamberId, title, description, priority } = req.body;
         const userId = req.user.userId;
-
-        // Verify access
-        // ...
 
         let evidencePath = null;
         if (req.file) {
@@ -28,9 +26,8 @@ exports.reportIssue = async (req, res) => {
     }
 };
 
+// Get issues based on role
 exports.getMyIssues = async (req, res) => {
-    // Operator sees issues they reported (or for their chambers)
-    // Engineer sees assigned issues
     try {
         const { userId, role } = req.user;
         let whereClause = {};
@@ -40,10 +37,41 @@ exports.getMyIssues = async (req, res) => {
         } else if (role === 'Operator' || role === 'Site Manager') {
             whereClause.reportedById = userId;
         }
+        // Admin can see all issues
+        else if (role === 'Admin') {
+            // No where clause needed, admins see everything
+        }
 
-        const issues = await Issue.findAll({ where: whereClause, include: Chamber });
+        const issues = await Issue.findAll({
+            where: whereClause,
+            include: [{ model: Chamber }, { model: User, as: 'assignedTo' }]
+        });
         res.json(issues);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching issues', error: error.message });
     }
-}
+};
+
+// Admin assigns an issue to an engineer
+exports.assignIssue = async (req, res) => {
+    try {
+        const { issueId, engineerId } = req.body;
+        const { role } = req.user;
+
+        if (role !== 'Admin') {
+            return res.status(403).json({ message: 'Only admins can assign issues' });
+        }
+
+        const issue = await Issue.findByPk(issueId);
+        if (!issue) {
+            return res.status(404).json({ message: 'Issue not found' });
+        }
+
+        issue.assignedToId = engineerId;
+        await issue.save();
+
+        res.json({ message: 'Issue assigned successfully', issue });
+    } catch (error) {
+        res.status(500).json({ message: 'Error assigning issue', error: error.message });
+    }
+};
