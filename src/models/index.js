@@ -7,6 +7,10 @@ const Customer = require('./Customer');
 const Chamber = require('./Chamber');
 const Checklist = require('./Checklist');
 const Issue = require('./Issue');
+const ChecklistTemplate = require('./ChecklistTemplate');
+const ChecklistItem = require('./ChecklistItem');
+const ChecklistSubmission = require('./ChecklistSubmission');
+const ChecklistResponse = require('./ChecklistResponse');
 
 // --- Associations ---
 
@@ -30,9 +34,17 @@ Chamber.belongsTo(Customer, { foreignKey: 'customerId' });
 Chamber.hasMany(Checklist, { foreignKey: 'chamberId' });
 Checklist.belongsTo(Chamber, { foreignKey: 'chamberId' });
 
+
+ChecklistTemplate.hasMany(ChecklistItem, { foreignKey: 'templateId' });
+ChecklistItem.belongsTo(ChecklistTemplate, { foreignKey: 'templateId' });
+
+ChecklistSubmission.hasMany(ChecklistResponse, { foreignKey: 'submissionId' });
+ChecklistResponse.belongsTo(ChecklistSubmission, { foreignKey: 'submissionId' });
+
 // User <-> Checklist (Who performed it)
 User.hasMany(Checklist, { foreignKey: 'userId' });
 Checklist.belongsTo(User, { foreignKey: 'userId' });
+
 
 // Chamber <-> Issue
 Chamber.hasMany(Issue, { foreignKey: 'chamberId' });
@@ -77,5 +89,9 @@ module.exports = {
     Chamber,
     Checklist,
     Issue,
-    initDB
+    initDB,
+    ChecklistTemplate,
+    ChecklistItem,
+    ChecklistSubmission,
+    ChecklistResponse
 };

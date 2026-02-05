@@ -14,6 +14,7 @@ router.get('/chambers/:id', chamberController.getChamberDetails);
 
 // Checklists
 router.post('/checklists', upload.single('evidence'), checklistController.submitChecklist);
+router.get('/checklists/template/:type', checklistController.getChecklistTemplate);
 router.get('/chambers/:chamberId/checklists', checklistController.getHistory);
 
 // Issues
