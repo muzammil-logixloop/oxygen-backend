@@ -5,6 +5,7 @@ const checklistController = require('../controllers/checklistController');
 const issueController = require('../controllers/issueController');
 const authMiddleware = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
+const uploadchecklist = require('../middleware/uploadChecklist');
 
 router.use(authMiddleware);
 
@@ -13,9 +14,10 @@ router.get('/chambers', chamberController.getMyChambers);
 router.get('/chambers/:id', chamberController.getChamberDetails);
 
 // Checklists
-router.post('/checklists', upload.single('evidence'), checklistController.submitChecklist);
+router.post('/checklists/submit', uploadchecklist, checklistController.submitChecklist);
 router.get('/checklists/template/:type', checklistController.getChecklistTemplate);
 router.get('/chambers/:chamberId/checklists', checklistController.getHistory);
+router.get('/checklists/my-submissions', checklistController.getMySubmissions);
 
 // Issues
 router.post('/issues', upload.single('evidence'), issueController.reportIssue);

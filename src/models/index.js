@@ -40,6 +40,18 @@ ChecklistItem.belongsTo(ChecklistTemplate, { foreignKey: 'templateId' });
 
 ChecklistSubmission.hasMany(ChecklistResponse, { foreignKey: 'submissionId' });
 ChecklistResponse.belongsTo(ChecklistSubmission, { foreignKey: 'submissionId' });
+// ChecklistSubmission belongs to Chamber
+ChecklistSubmission.belongsTo(Chamber, { 
+  foreignKey: 'chamberId', 
+  as: 'Chamber' 
+});
+
+// Optional: Chamber has many submissions
+Chamber.hasMany(ChecklistSubmission, { 
+  foreignKey: 'chamberId', 
+  as: 'Submissions' 
+});
+
 
 // User <-> Checklist (Who performed it)
 User.hasMany(Checklist, { foreignKey: 'userId' });
@@ -59,13 +71,19 @@ User.hasMany(Issue, { foreignKey: 'assignedToId', as: 'assignedIssues' });
 Issue.belongsTo(User, { foreignKey: 'assignedToId', as: 'assignee' });
 
 
+
+
+
+
+
+
 const ROLES = ['Operator', 'Site Manager', 'Oxygens Admin', 'Engineer'];
 
 async function initDB() {
     try {
         // Determine if we need to sync. 
         // WARN: using { alter: true } matches existing columns but isn't perfect for production.
-        await sequelize.sync({ alter: true });
+        // await sequelize.sync({ alter: true });
 
         // Seed Roles
         for (const roleName of ROLES) {
