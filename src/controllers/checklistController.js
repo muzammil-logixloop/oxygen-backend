@@ -157,7 +157,7 @@ exports.submitChecklist = async (req, res) => {
       }
     });
 
-    console.log("Mapped attachments:", attachmentsMap);
+    // console.log("Mapped attachments:", attachmentsMap);
 
     // Parse request body
     const { chamberId, checkType, declarationAccepted, signatureName, notesGeneral } = req.body;
@@ -258,6 +258,7 @@ exports.submitChecklist = async (req, res) => {
 
       await Issue.create({
         chamberId,
+        reportedById: user.userId,
         severity: "SafetyCritical",
         status: "New",
         title: "Critical Checklist Failure",

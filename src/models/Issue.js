@@ -2,11 +2,17 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 const Issue = sequelize.define('Issue', {
-    id: {
+    issueId: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
     },
+
+    customerId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+
     chamberId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -15,7 +21,8 @@ const Issue = sequelize.define('Issue', {
             key: 'id'
         }
     },
-    reportedById: {
+
+    createdByMemberId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -23,36 +30,90 @@ const Issue = sequelize.define('Issue', {
             key: 'id'
         }
     },
-    assignedToId: {
-        type: DataTypes.INTEGER,
-        allowNull: true, // Assigned to Engineer
-        references: {
-            model: 'Users',
-            key: 'id'
-        }
+
+    createdByName: {
+        type: DataTypes.STRING,
+        allowNull: false
     },
+
+    category: {
+        type: DataTypes.ENUM(
+            'Leak',
+            'Zip',
+            'Door',
+            'Window',
+            'Valves',
+            'Gauge',
+            'Electrical',
+            'Noise',
+            'Other'
+        ),
+        allowNull: false,
+        defaultValue: 'Other'
+    },
+
+    severity: {
+        type: DataTypes.ENUM(
+            'Info',
+            'Minor',
+            'Urgent',
+            'SafetyCritical'
+        ),
+        defaultValue: 'Minor'
+    },
+
+    status: {
+        type: DataTypes.ENUM(
+            'New',
+            'InProgress',
+            'WaitingOnCustomer',
+            'Resolved',
+            'Closed'
+        ),
+        defaultValue: 'New'
+    },
+
     title: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
     },
+
     description: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: false
     },
-    priority: {
-        type: DataTypes.ENUM('Low', 'Medium', 'High', 'Critical'),
-        defaultValue: 'Medium'
+
+    uploads: {
+        type: DataTypes.JSON,
+        allowNull: true
     },
-    status: {
-        type: DataTypes.ENUM('Open', 'In Progress', 'Resolved', 'Closed'),
-        defaultValue: 'Open'
+
+    doNotOperateRecommended: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     },
-    evidencePath: {
-        type: DataTypes.STRING,
+
+    assignedEngineer: {
+        type: DataTypes.INTEGER,
         allowNull: true,
+        references: {
+            model: 'Users',
+            key: 'id'
+        }
+    },
+
+    resolutionSummary: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+
+    closedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
+
 }, {
-    timestamps: true,
+    timestamps: true
 });
 
 module.exports = Issue;

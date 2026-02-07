@@ -20,7 +20,8 @@ router.get('/chambers/:chamberId/checklists', checklistController.getHistory);
 router.get('/checklists/my-submissions', checklistController.getMySubmissions);
 
 // Issues
-router.post('/issues', upload.single('evidence'), issueController.reportIssue);
-router.get('/issues', issueController.getMyIssues);
+router.post('/issues', upload.array('uploads', 10), issueController.reportIssue);
+router.get('/issues/my', issueController.getMyIssues);
+router.post('/issues/assign', issueController.assignIssue);
 
 module.exports = router;

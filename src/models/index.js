@@ -11,6 +11,7 @@ const ChecklistTemplate = require('./ChecklistTemplate');
 const ChecklistItem = require('./ChecklistItem');
 const ChecklistSubmission = require('./ChecklistSubmission');
 const ChecklistResponse = require('./ChecklistResponse');
+const IssueMessage = require('./IssueMessage');
 
 // --- Associations ---
 
@@ -71,6 +72,11 @@ User.hasMany(Issue, { foreignKey: 'assignedToId', as: 'assignedIssues' });
 Issue.belongsTo(User, { foreignKey: 'assignedToId', as: 'assignee' });
 
 
+Issue.belongsTo(User, { as: 'creator', foreignKey: 'createdByMemberId' });
+Issue.belongsTo(User, { as: 'engineer', foreignKey: 'assignedEngineer' });
+Issue.belongsTo(Chamber, { foreignKey: 'chamberId' });
+
+IssueMessage.belongsTo(Issue, { foreignKey: 'issueId' });
 
 
 
@@ -111,5 +117,6 @@ module.exports = {
     ChecklistTemplate,
     ChecklistItem,
     ChecklistSubmission,
-    ChecklistResponse
+    ChecklistResponse,
+    IssueMessage
 };
