@@ -23,4 +23,6 @@ router.post('/users', adminController.createUser);
 router.delete('/users/:id', adminController.deleteUser);
 router.post('/assign-user', adminController.assignUserToCustomer);
 
+router.get('/dashboard-stats', adminController.getDashboardStats);
+
 module.exports = router;

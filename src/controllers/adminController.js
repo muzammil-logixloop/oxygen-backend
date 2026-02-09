@@ -1,4 +1,5 @@
-const { Customer, Chamber, User, Role } = require('../models');
+const { Customer, Chamber, User, Role , Issue} = require('../models');
+const { Op } = require('sequelize');
 
 // --- Customer Management ---
 
@@ -39,6 +40,10 @@ exports.getEngineers = async (req, res) => {
 
 exports.createChamber = async (req, res) => {
     try {
+        const {role } = req.user;
+        if (role !== 'Oxygens Admin') {
+            return res.status(403).json({ message: 'Forbidden: Only Admins can create chambers' });
+        }
         const { serialNumber, modelName, customerId, installationDate, warrantyExpiryDate } = req.body;
         const chamber = await Chamber.create({
             serialNumber,
@@ -127,5 +132,51 @@ exports.deleteUser = async (req, res) => {
         res.json({ message: 'User deleted' });
     } catch (error) {
         res.status(500).json({ message: 'Error deleting user', error: error.message });
+    }
+};
+
+
+exports.getDashboardStats = async (req, res) => {
+    try {
+        // Count total users
+        const userCount = await User.count();
+
+        // Count total customers
+        const customerCount = await Customer.count();
+
+        // Count total chambers
+        const chamberCount = await Chamber.count();
+
+        // Count suspended chambers
+        const suspendedChamberCount = await Chamber.count({
+            where: { warrantyStatus: 'Suspended' }
+        });
+
+        // Count open issues
+        const openIssuesCount = await Issue.count({
+            where: {
+                status: { [Op.in]: ['New', 'InProgress', 'WaitingOnCustomer'] }
+            }
+        });
+
+        // Count closed issues
+        const closedIssuesCount = await Issue.count({
+            where: {
+                status: { [Op.in]: ['Resolved', 'Closed'] }
+            }
+        });
+
+        // Return only numbers
+        res.json({
+            userCount,
+            customerCount,
+            chamberCount,
+            suspendedChamberCount,
+            openIssuesCount,
+            closedIssuesCount
+        });
+    } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        res.status(500).json({ message: 'Error fetching statistics', error: error.message });
     }
 };
