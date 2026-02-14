@@ -3,7 +3,10 @@ const { User, Customer } = require('../models');
 // Get customer assigned to logged-in operator
 exports.getMyCustomer = async (req, res) => {
     try {
-        const userId = req.user.id; // From auth middleware
+        
+        const userId = req.user.userId;
+
+        // console.log("Fetching customer for operator with userId:", userId);
 
         // 1️⃣ Check if user exists
         const user = await User.findByPk(userId);
@@ -11,7 +14,9 @@ exports.getMyCustomer = async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found"
+                message: "User not found",
+                userId: userId
+                
             });
         }
 
