@@ -4,8 +4,8 @@ const {
   ChecklistSubmission,
   ChecklistResponse,
   Chamber,
-  Issue
-} = require('../models');
+  Issue,
+} = require("../models");
 
 // exports.submitChecklist = async (req, res) => {
 //   try {
@@ -132,7 +132,6 @@ const {
 //   }
 // };
 
-
 exports.submitChecklist = async (req, res) => {
   try {
     const user = req.user;
@@ -144,7 +143,7 @@ exports.submitChecklist = async (req, res) => {
     const attachmentsMap = {};
     let videoFile = null;
 
-    files.forEach(file => {
+    files.forEach((file) => {
       const match = file.fieldname.match(/^attachments\[(.+)\]$/);
 
       if (match) {
@@ -160,7 +159,13 @@ exports.submitChecklist = async (req, res) => {
     // console.log("Mapped attachments:", attachmentsMap);
 
     // Parse request body
-    const { chamberId, checkType, declarationAccepted, signatureName, notesGeneral } = req.body;
+    const {
+      chamberId,
+      checkType,
+      declarationAccepted,
+      signatureName,
+      notesGeneral,
+    } = req.body;
 
     if (!req.body.responses) {
       return res.status(400).json({ message: "Responses are required" });
@@ -176,20 +181,24 @@ exports.submitChecklist = async (req, res) => {
 
     // Get active template
     const template = await ChecklistTemplate.findOne({
-      where: { type: checkType, active: true }
+      where: { type: checkType, active: true },
     });
 
     if (!template) {
-      return res.status(400).json({ message: "No active checklist template found" });
+      return res
+        .status(400)
+        .json({ message: "No active checklist template found" });
     }
 
     const items = await ChecklistItem.findAll({
-      where: { templateId: template.templateId }
+      where: { templateId: template.templateId },
     });
 
     // Monthly video validation
-    if (checkType === 'Monthly' && !videoFile) {
-      return res.status(400).json({ message: "Monthly checklist requires a video upload" });
+    if (checkType === "Monthly" && !videoFile) {
+      return res
+        .status(400)
+        .json({ message: "Monthly checklist requires a video upload" });
     }
 
     let overallResult = "Pass";
@@ -197,7 +206,7 @@ exports.submitChecklist = async (req, res) => {
 
     // Validate each response
     for (let r of responses) {
-      const item = items.find(i => i.itemId == r.itemId);
+      const item = items.find((i) => i.itemId == r.itemId);
       if (!item) continue;
 
       // Photo required on fail
@@ -207,7 +216,7 @@ exports.submitChecklist = async (req, res) => {
         !attachmentsMap[r.itemId]
       ) {
         return res.status(400).json({
-          message: `Photo required for failed item ${r.itemId}`
+          message: `Photo required for failed item ${r.itemId}`,
         });
       }
 
@@ -217,7 +226,7 @@ exports.submitChecklist = async (req, res) => {
         computedFlags.push({
           itemId: r.itemId,
           section: item.section,
-          message: "Critical safety failure"
+          message: "Critical safety failure",
         });
       }
     }
@@ -235,7 +244,7 @@ exports.submitChecklist = async (req, res) => {
       signatureName,
       notesGeneral,
       videoUpload: videoFile ? videoFile.filename : null,
-      computedFlags
+      computedFlags,
     });
 
     // Save responses
@@ -244,8 +253,8 @@ exports.submitChecklist = async (req, res) => {
         submissionId: submission.submissionId,
         itemId: r.itemId,
         result: r.result,
-        notes: r.notes || '',
-        attachment: attachmentsMap[r.itemId] || null
+        notes: r.notes || "",
+        attachment: attachmentsMap[r.itemId] || null,
       });
     }
 
@@ -253,59 +262,54 @@ exports.submitChecklist = async (req, res) => {
     if (overallResult === "Fail") {
       await chamber.update({
         warrantyStatus: "Suspended",
-        doNotOperateFlag: true
+        doNotOperateFlag: true,
       });
 
       await Issue.create({
-        chamberId,
-        reportedById: user.userId,
+        customerId: user.customerId,
+        chamberId: chamberId,
+        createdByMemberId: user.userId,
+        createdByName: user.name,
         severity: "SafetyCritical",
         status: "New",
         title: "Critical Checklist Failure",
-        description: "Automatic ticket due to critical checklist failure"
+        description: "Automatic ticket due to critical checklist failure",
       });
     }
 
     return res.json({
       message: "Checklist submitted successfully",
       submissionId: submission.submissionId,
-      overallResult
+      overallResult,
     });
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: error.message });
   }
 };
 
-
-
-
 exports.getChecklistTemplate = async (req, res) => {
   const { type } = req.params;
 
   const template = await ChecklistTemplate.findOne({
     where: { type, active: true },
-    include: [ChecklistItem]
+    include: [ChecklistItem],
   });
 
   res.json(template);
 };
 
 exports.getHistory = async (req, res) => {
-
   const { chamberId } = req.params;
 
   const history = await ChecklistSubmission.findAll({
     where: { chamberId },
     include: [ChecklistResponse],
-    order: [['submittedAt', 'DESC']]
+    order: [["submittedAt", "DESC"]],
   });
 
   res.json(history);
 };
-
-
 
 // Get submissions for logged-in user with proper URLs
 exports.getMySubmissions = async (req, res) => {
@@ -313,58 +317,53 @@ exports.getMySubmissions = async (req, res) => {
     const user = req.user;
 
     // Base URL for uploaded files
-    const baseUrl = `${req.protocol}://${req.get('host')}/uploads`;
+    const baseUrl = `${req.protocol}://${req.get("host")}/uploads`;
 
     // Fetch submissions with proper eager loading
     const submissions = await ChecklistSubmission.findAll({
-  where: { memberId: user.userId },
-  include: [
-    {
-      model: ChecklistResponse,
-      as: 'ChecklistResponses', // must match association
-      attributes: ['itemId', 'result', 'notes', 'attachment']
-    },
-    {
-      model: Chamber,
-      as: 'Chamber', // must match association
-      attributes: ['id', 'serialNumber', 'modelName'] // use real columns
-    }
-  ],
-  order: [['submittedAt', 'DESC']]
-});
-
+      where: { memberId: user.userId },
+      include: [
+        {
+          model: ChecklistResponse,
+          as: "ChecklistResponses", // must match association
+          attributes: ["itemId", "result", "notes", "attachment"],
+        },
+        {
+          model: Chamber,
+          as: "Chamber", // must match association
+          attributes: ["id", "serialNumber", "modelName"], // use real columns
+        },
+      ],
+      order: [["submittedAt", "DESC"]],
+    });
 
     // Format submissions with full URLs
-    const formatted = submissions.map(sub => {
-  const submission = sub.toJSON();
+    const formatted = submissions.map((sub) => {
+      const submission = sub.toJSON();
 
-  return {
-    submissionId: submission.submissionId,
-    chamberId: submission.chamberId,
-    chamberSerialNumber: submission.Chamber?.serialNumber || null,
-    chamberModelName: submission.Chamber?.modelName || null,
-    checkType: submission.checkType,
-    overallResult: submission.overallResult,
-    submittedAt: submission.submittedAt,
-    notesGeneral: submission.notesGeneral,
-    signatureName: submission.signatureName,
-    videoUrl: submission.videoUpload
-      ? `${baseUrl}/${submission.videoUpload}`
-      : null,
-    responses: submission.ChecklistResponses.map(r => ({
-      itemId: r.itemId,
-      result: r.result,
-      notes: r.notes,
-      attachmentUrl: r.attachment
-        ? `${baseUrl}/${r.attachment}`
-        : null
-    }))
-  };
-});
-
+      return {
+        submissionId: submission.submissionId,
+        chamberId: submission.chamberId,
+        chamberSerialNumber: submission.Chamber?.serialNumber || null,
+        chamberModelName: submission.Chamber?.modelName || null,
+        checkType: submission.checkType,
+        overallResult: submission.overallResult,
+        submittedAt: submission.submittedAt,
+        notesGeneral: submission.notesGeneral,
+        signatureName: submission.signatureName,
+        videoUrl: submission.videoUpload
+          ? `${baseUrl}/${submission.videoUpload}`
+          : null,
+        responses: submission.ChecklistResponses.map((r) => ({
+          itemId: r.itemId,
+          result: r.result,
+          notes: r.notes,
+          attachmentUrl: r.attachment ? `${baseUrl}/${r.attachment}` : null,
+        })),
+      };
+    });
 
     res.json(formatted);
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
