@@ -17,11 +17,13 @@ const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const opsRoutes = require('./routes/opsRoutes');
+const operatorRoutes = require('./routes/operatorRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ops', opsRoutes);
+app.use('/api/operator', operatorRoutes);
 
 app.get('/', (req, res) => {
     res.send('OXYGENS CHAMBER PORTAL API is running');

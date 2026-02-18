@@ -7,22 +7,28 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 // Protect all admin routes
 router.use(authMiddleware, roleMiddleware(['Oxygens Admin']));
 
-// Customer Routes
+// ================= CUSTOMER ROUTES =================
 router.post('/customers', adminController.createCustomer);
 router.get('/customers', adminController.getAllCustomers);
-router.post('/assign-user', adminController.assignUserToCustomer);
+router.put('/customers/:id', adminController.updateCustomer);
+router.delete('/customers/:id', adminController.deleteCustomer);
 
-// Chamber Routes
+router.post('/assign-user', adminController.assignUserToCustomer); // Only once
+
+// ================= CHAMBER ROUTES =================
 router.post('/chambers', adminController.createChamber);
 router.get('/chambers', adminController.getAllChambers);
+router.put('/chambers/:id', adminController.updateChamber);
+router.delete('/chambers/:id', adminController.deleteChamber);
 
-// User Routes
+// ================= USER ROUTES =================
 router.get('/users', adminController.getUsers);
 router.get('/users/engineers', adminController.getEngineers);
 router.post('/users', adminController.createUser);
+router.put('/users/:id', adminController.updateUser);
 router.delete('/users/:id', adminController.deleteUser);
-router.post('/assign-user', adminController.assignUserToCustomer);
 
+// ================= DASHBOARD =================
 router.get('/dashboard-stats', adminController.getDashboardStats);
 
 module.exports = router;

@@ -35,6 +35,10 @@ Chamber.belongsTo(Customer, { foreignKey: 'customerId' });
 Chamber.hasMany(Checklist, { foreignKey: 'chamberId' });
 Checklist.belongsTo(Chamber, { foreignKey: 'chamberId' });
 
+// Customer <-> Issue (One Customer has many Issues)
+Customer.hasMany(User, { foreignKey: "customerId" });
+User.belongsTo(Customer, { foreignKey: "customerId" });
+
 
 ChecklistTemplate.hasMany(ChecklistItem, { foreignKey: 'templateId' });
 ChecklistItem.belongsTo(ChecklistTemplate, { foreignKey: 'templateId' });
