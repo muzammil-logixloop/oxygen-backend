@@ -174,7 +174,7 @@ exports.submitChecklist = async (req, res) => {
       return res.status(404).json({ message: "Chamber not found" });
     }
 
-    // Get active template
+    // Get active templa
     const template = await ChecklistTemplate.findOne({
       where: { type: checkType, active: true }
     });
