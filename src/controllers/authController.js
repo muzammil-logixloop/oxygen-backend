@@ -55,11 +55,20 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials.' });
         }
 
+        // ✅ Update last login time
+        await user.update({ last_login_at: new Date() });
+
         const token = jwt.sign(
-            { userId: user.id, role: user.Role.name, customerId: user.customerId, name: user.username },
+            { 
+                userId: user.id, 
+                role: user.Role.name, 
+                customerId: user.customerId, 
+                name: user.username 
+            },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
+        console.log(`User ${user.username} logged in at ${user.last_login_at}`);
 
         res.status(200).json({
             message: 'Login successful.',
@@ -68,9 +77,11 @@ exports.login = async (req, res) => {
                 id: user.id,
                 username: user.username,
                 email: user.email,
-                role: user.Role.name
+                role: user.Role.name,
+                lastLogin: user.last_login_at
             }
         });
+
     } catch (error) {
         res.status(500).json({ message: 'Server error.', error: error.message });
     }
