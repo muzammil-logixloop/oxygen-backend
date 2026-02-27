@@ -123,19 +123,34 @@ exports.deleteChamber = async (req, res) => {
 };
 
 // ================= USER MANAGEMENT =================
+// exports.getUsers = async (req, res) => {
+//     try {
+//         const users = await User.findAll({
+//             attributes: { exclude: ['password'] },
+//             include: [
+//                 { model: Role, attributes: ['name'] },
+//                 { model: Customer, attributes: ['name'] }
+//             ]
+//         });
+//         res.json(users);
+//     } catch (error) {
+//         res.status(500).json({ message: 'Error fetching users', error: error.message });
+//     }
+// };
+
 exports.getUsers = async (req, res) => {
-    try {
-        const users = await User.findAll({
-            attributes: { exclude: ['password'] },
-            include: [
-                { model: Role, attributes: ['name'] },
-                { model: Customer, attributes: ['name'] }
-            ]
-        });
-        res.json(users);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching users', error: error.message });
-    }
+  try {
+    const users = await User.findAll({
+      attributes: ['id', 'username', 'email', 'customerId', 'last_login_at'], // ✅ include last_login_at
+      include: [
+        { model: Role, attributes: ['name'] },
+        { model: Customer, attributes: ['name'] }
+      ]
+    });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching users', error: error.message });
+  }
 };
 
 exports.getEngineers = async (req, res) => {
