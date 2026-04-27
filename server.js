@@ -9,11 +9,15 @@ async function startServer() {
         // Initialize DB (Connect + Sync + Seed)
         await initDB();
 
+        console.log("✅ Database connected successfully");
+
         app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
+            console.log(`🚀 Server running on port ${PORT}`);
         });
+
     } catch (error) {
-        console.error('Unable to connect to the database:', error);
+        console.error("❌ Unable to connect to the database:", error);
+        process.exit(1); // stop server if DB fails
     }
 }
 
